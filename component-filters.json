@@ -15,18 +15,11 @@
       "hero",
       "cards",
       "columns",
-      "fragment",
-      "uonCards"
+      "fragment"
     ]
   },
   {
     "id": "cards",
-    "components": [
-      "card"
-    ]
-  },
-  {
-    "id": "uonCards",
     "components": [
       "card"
     ]
