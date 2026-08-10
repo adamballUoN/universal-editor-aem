@@ -180,8 +180,8 @@
               "page": {
                 "resourceType": "core/franklin/components/block/v1/block/item",
                 "template": {
-                  "name": "UoN Card",
-                  "model": "uonCard"
+                  "name": "Card",
+                  "model": "card"
                 }
               }
             }
