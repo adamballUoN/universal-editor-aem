@@ -8,6 +8,12 @@ function getTextComponentTitle(component) {
   return titleNode?.textContent.trim() || '';
 }
 
+function getListItemTitle(item) {
+  const title = item.cloneNode(true);
+  title.querySelector('ul')?.remove();
+  return title.textContent.trim();
+}
+
 function createAccordion(title, links, index) {
   const accordion = document.createElement('div');
   accordion.className = 'cmp-accordion cmp-accordion--default';
@@ -48,10 +54,19 @@ export default async function decorate(block) {
   const fragment = await loadFragment(footerPath);
   const textComponents = [...fragment.querySelectorAll('[data-aue-prop="text"], .default-content-wrapper')]
     .filter((component) => !component.parentElement.closest('[data-aue-prop="text"], .default-content-wrapper'));
-  const groups = textComponents.map((component) => ({
-    title: getTextComponentTitle(component),
-    links: [...component.querySelectorAll('a')],
-  })).filter(({ title, links }) => title && links.length);
+  const groups = textComponents.flatMap((component) => {
+    const list = component.querySelector('ul');
+    if (list) {
+      return [...list.querySelectorAll(':scope > li')].map((item) => ({
+        title: getListItemTitle(item),
+        links: [...item.querySelectorAll(':scope > ul a')],
+      }));
+    }
+    return [{
+      title: getTextComponentTitle(component),
+      links: [...component.querySelectorAll('a')],
+    }];
+  }).filter(({ title, links }) => title && links.length);
 
   const footer = document.createElement('div');
   footer.className = 'footer__container';
