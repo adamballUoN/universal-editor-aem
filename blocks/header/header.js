@@ -7,6 +7,13 @@ function getItemLabel(item) {
   return label.textContent.trim();
 }
 
+function getTextComponentTitle(component) {
+  const content = component.querySelector('p') || component;
+  const titleNode = [...content.childNodes]
+    .find((node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim());
+  return titleNode?.textContent.trim() || '';
+}
+
 function createSearch() {
   const search = document.createElement('div');
   search.className = 'search search-container';
@@ -23,7 +30,7 @@ function createSearch() {
   return search;
 }
 
-function createNavigation(sourceLists) {
+function createNavigation(sourceLists, textComponents) {
   const navigation = document.createElement('div');
   navigation.className = 'headerv2-nav';
   navigation.setAttribute('aria-label', 'Main navigation');
@@ -41,15 +48,19 @@ function createNavigation(sourceLists) {
   menu.setAttribute('aria-label', 'Main menu');
   const entries = [];
 
-  const sourceItems = sourceLists.flatMap((sourceList) => [...sourceList.querySelectorAll(':scope > li')]);
+  const sourceItems = [
+    ...sourceLists.flatMap((sourceList) => [...sourceList.querySelectorAll(':scope > li')]),
+    ...textComponents,
+  ];
   sourceItems.forEach((sourceItem, index) => {
-    const label = getItemLabel(sourceItem);
+    const isTextComponent = sourceItem.matches('[data-aue-prop="text"]');
+    const label = isTextComponent ? getTextComponentTitle(sourceItem) : getItemLabel(sourceItem);
     const links = sourceItem.querySelector(':scope > ul');
     const directLink = sourceItem.querySelector(':scope > a, :scope > p > a');
     if (!label) return;
 
     const item = document.createElement('li');
-    if (!links && directLink) {
+    if (!isTextComponent && !links && directLink) {
       const link = directLink.cloneNode(true);
       link.className = 'headerv2-nav-level-1-btn';
       item.append(link);
@@ -83,7 +94,9 @@ function createNavigation(sourceLists) {
       linkList.className = 'headerv2-nav-level-2__content-column-links';
 
       sourceLinks.forEach((sourceLink) => {
-        const link = sourceLink.querySelector(':scope > a, :scope > p > a');
+        const link = sourceLink.matches('a')
+          ? sourceLink
+          : sourceLink.querySelector(':scope > a, :scope > p > a');
         if (!link) return;
         const linkItem = document.createElement('li');
         const copiedLink = link.cloneNode(true);
@@ -98,7 +111,9 @@ function createNavigation(sourceLists) {
 
     const sourceColumns = [...(links?.querySelectorAll(':scope > li') || [])];
     const groupedColumns = sourceColumns.filter((sourceColumn) => sourceColumn.querySelector(':scope > ul'));
-    if (groupedColumns.length) {
+    if (isTextComponent) {
+      addColumn(label, [...sourceItem.querySelectorAll('a')]);
+    } else if (groupedColumns.length) {
       groupedColumns.forEach((sourceColumn) => {
         const columnLinks = [...sourceColumn.querySelectorAll(':scope > ul > li')];
         addColumn(getItemLabel(sourceColumn), columnLinks);
@@ -133,6 +148,9 @@ export default async function decorate(block) {
   const brand = sections[0]?.querySelector('a')?.cloneNode(true);
   const sourceLists = sections.slice(1).flatMap((section) => [...section.querySelectorAll('ul')])
     .filter((list) => !list.parentElement.closest('ul'));
+  const textComponents = sections.slice(1).flatMap((section) => [
+    ...section.querySelectorAll('[data-aue-prop="text"]'),
+  ]).filter((component) => !component.querySelector('ul'));
 
   const component = document.createElement('div');
   component.className = 'headerv2-component';
@@ -197,7 +215,7 @@ export default async function decorate(block) {
   flyoutTop.className = 'flyout-top';
   const flyoutInner = document.createElement('div');
   flyoutInner.className = 'flyout-inner';
-  const { navigation, entries, backButton } = createNavigation(sourceLists);
+  const { navigation, entries, backButton } = createNavigation(sourceLists, textComponents);
   flyoutInner.append(navigation);
   flyout.append(flyoutTop, flyoutInner);
   header.append(container, flyout);
