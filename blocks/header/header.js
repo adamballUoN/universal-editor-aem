@@ -60,7 +60,7 @@ function createNavigation(sourceLists, textComponents) {
     if (!label) return;
 
     const item = document.createElement('li');
-    if (!isTextComponent && !links && directLink) {
+    if (!links && directLink) {
       const link = directLink.cloneNode(true);
       link.className = 'headerv2-nav-level-1-btn';
       item.append(link);
