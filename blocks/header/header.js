@@ -72,26 +72,42 @@ function createNavigation(sourceList) {
     panel.setAttribute('aria-hidden', 'true');
     const content = document.createElement('div');
     content.className = 'headerv2-nav-level-2__content';
-    const column = document.createElement('div');
-    column.className = 'headerv2-nav-level-2__content-column';
-    const title = document.createElement('span');
-    title.className = 'headerv2-nav-level-2__content-column-title';
-    title.textContent = label;
-    const linkList = document.createElement('ul');
-    linkList.className = 'headerv2-nav-level-2__content-column-links';
+    const addColumn = (columnTitle, sourceLinks) => {
+      const column = document.createElement('div');
+      column.className = 'headerv2-nav-level-2__content-column';
+      const title = document.createElement('span');
+      title.className = 'headerv2-nav-level-2__content-column-title';
+      title.textContent = columnTitle;
+      const linkList = document.createElement('ul');
+      linkList.className = 'headerv2-nav-level-2__content-column-links';
 
-    links?.querySelectorAll(':scope > li').forEach((sourceLink) => {
-      const link = sourceLink.querySelector('a');
-      if (!link) return;
-      const linkItem = document.createElement('li');
-      const copiedLink = link.cloneNode(true);
-      copiedLink.className = 'headerv2-nav-level-2__content-column-link';
-      linkItem.append(copiedLink);
-      linkList.append(linkItem);
-    });
+      sourceLinks.forEach((sourceLink) => {
+        const link = sourceLink.querySelector(':scope > a, :scope > p > a');
+        if (!link) return;
+        const linkItem = document.createElement('li');
+        const copiedLink = link.cloneNode(true);
+        copiedLink.className = 'headerv2-nav-level-2__content-column-link';
+        linkItem.append(copiedLink);
+        linkList.append(linkItem);
+      });
 
-    column.append(title, linkList);
-    content.append(column);
+      column.append(title, linkList);
+      content.append(column);
+    };
+
+    const sourceColumns = [...(links?.querySelectorAll(':scope > li') || [])];
+    const groupedColumns = sourceColumns.filter((sourceColumn) => sourceColumn.querySelector(':scope > ul'));
+    if (groupedColumns.length) {
+      groupedColumns.forEach((sourceColumn) => {
+        const columnLinks = [...sourceColumn.querySelectorAll(':scope > ul > li')];
+        addColumn(getItemLabel(sourceColumn), columnLinks);
+      });
+      const standaloneLinks = sourceColumns.filter((sourceColumn) => !sourceColumn.querySelector(':scope > ul'));
+      if (standaloneLinks.length) addColumn(label, standaloneLinks);
+    } else {
+      addColumn(label, sourceColumns);
+    }
+
     panel.append(content);
     item.append(button, panel);
     menu.append(item);
