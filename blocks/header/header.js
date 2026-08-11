@@ -23,7 +23,7 @@ function createSearch() {
   return search;
 }
 
-function createNavigation(sourceList) {
+function createNavigation(sourceLists) {
   const navigation = document.createElement('div');
   navigation.className = 'headerv2-nav';
   navigation.setAttribute('aria-label', 'Main navigation');
@@ -41,7 +41,8 @@ function createNavigation(sourceList) {
   menu.setAttribute('aria-label', 'Main menu');
   const entries = [];
 
-  sourceList?.querySelectorAll(':scope > li').forEach((sourceItem, index) => {
+  const sourceItems = sourceLists.flatMap((sourceList) => [...sourceList.querySelectorAll(':scope > li')]);
+  sourceItems.forEach((sourceItem, index) => {
     const label = getItemLabel(sourceItem);
     const links = sourceItem.querySelector(':scope > ul');
     const directLink = sourceItem.querySelector(':scope > a, :scope > p > a');
@@ -128,7 +129,8 @@ export default async function decorate(block) {
   const fragment = await loadFragment(navPath);
   const sections = [...fragment.children];
   const brand = sections[0]?.querySelector('a')?.cloneNode(true);
-  const sourceList = sections[1]?.querySelector('ul');
+  const sourceLists = sections.slice(1).flatMap((section) => [...section.querySelectorAll('ul')])
+    .filter((list) => !list.parentElement.closest('ul'));
 
   const component = document.createElement('div');
   component.className = 'headerv2-component';
@@ -193,7 +195,7 @@ export default async function decorate(block) {
   flyoutTop.className = 'flyout-top';
   const flyoutInner = document.createElement('div');
   flyoutInner.className = 'flyout-inner';
-  const { navigation, entries, backButton } = createNavigation(sourceList);
+  const { navigation, entries, backButton } = createNavigation(sourceLists);
   flyoutInner.append(navigation);
   flyout.append(flyoutTop, flyoutInner);
   header.append(container, flyout);
