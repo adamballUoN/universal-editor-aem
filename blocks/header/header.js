@@ -109,21 +109,37 @@ function createNavigation(sourceLists, textComponents) {
       content.append(column);
     };
 
-    const sourceColumns = [...(links?.querySelectorAll(':scope > li') || [])];
-    const groupedColumns = sourceColumns.filter((sourceColumn) => sourceColumn.querySelector(':scope > ul'));
     if (isTextComponent) {
       addColumn(label, [...sourceItem.querySelectorAll('a')]);
-    } else if (groupedColumns.length) {
-      groupedColumns.forEach((sourceColumn) => {
-        const columnLinks = [...sourceColumn.querySelectorAll(':scope > ul > li')];
-        addColumn(getItemLabel(sourceColumn), columnLinks);
-      });
-      const standaloneLinks = sourceColumns.filter((sourceColumn) => !sourceColumn.querySelector(':scope > ul'));
-      if (standaloneLinks.length) addColumn(label, standaloneLinks);
     } else {
-      const [firstItem, ...remainingItems] = sourceColumns;
-      const titleIsPlainText = firstItem && !firstItem.querySelector(':scope > a, :scope > p > a');
-      addColumn(titleIsPlainText ? getItemLabel(firstItem) : label, titleIsPlainText ? remainingItems : sourceColumns);
+      const addNestedColumns = (title, items) => {
+        let columnTitle = title;
+        let columnLinks = [];
+        const addCurrentColumn = () => {
+          if (columnTitle && columnLinks.length) addColumn(columnTitle, columnLinks);
+          columnLinks = [];
+        };
+
+        items.forEach((sourceColumn) => {
+          const link = sourceColumn.querySelector(':scope > a, :scope > p > a');
+          const nestedList = sourceColumn.querySelector(':scope > ul');
+          if (link) {
+            columnLinks.push(sourceColumn);
+          } else {
+            addCurrentColumn();
+            const nestedTitle = getItemLabel(sourceColumn);
+            if (nestedList) {
+              addNestedColumns(nestedTitle, [...nestedList.querySelectorAll(':scope > li')]);
+              columnTitle = '';
+            } else {
+              columnTitle = nestedTitle;
+            }
+          }
+        });
+        addCurrentColumn();
+      };
+
+      addNestedColumns(label, [...(links?.querySelectorAll(':scope > li') || [])]);
     }
 
     panel.append(content);
