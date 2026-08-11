@@ -106,7 +106,9 @@ function createNavigation(sourceLists) {
       const standaloneLinks = sourceColumns.filter((sourceColumn) => !sourceColumn.querySelector(':scope > ul'));
       if (standaloneLinks.length) addColumn(label, standaloneLinks);
     } else {
-      addColumn(label, sourceColumns);
+      const [firstItem, ...remainingItems] = sourceColumns;
+      const titleIsPlainText = firstItem && !firstItem.querySelector(':scope > a, :scope > p > a');
+      addColumn(titleIsPlainText ? getItemLabel(firstItem) : label, titleIsPlainText ? remainingItems : sourceColumns);
     }
 
     panel.append(content);
