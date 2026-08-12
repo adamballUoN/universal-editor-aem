@@ -1,8 +1,6 @@
 import { getMetadata } from '../../scripts/aem.js';
 import { loadFragment } from '../fragment/fragment.js';
 
-console.log('footer.js loaded');
-
 function getTextComponentTitle(component) {
   const content = component.querySelector('p') || component;
   const titleNode = [...content.childNodes]

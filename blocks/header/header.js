@@ -193,7 +193,6 @@ export default async function decorate(block) {
   logo.loading = 'lazy';
   logo.height = 72;
   logo.width = 197;
-  
   if (brand) {
     brand.className = 'headerv2__logo';
     brand.setAttribute('aria-label', 'Go to University of Nottingham homepage');
