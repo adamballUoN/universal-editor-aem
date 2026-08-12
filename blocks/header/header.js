@@ -193,13 +193,14 @@ export default async function decorate(block) {
   logo.loading = 'lazy';
   logo.height = 72;
   logo.width = 197;
-    if (brand) {
-      brand.className = 'headerv2__logo';
-      brand.setAttribute('aria-label', 'Go to University of Nottingham homepage');
-      brand.setAttribute('title', 'Go to University of Nottingham homepage');
-      brand.innerHTML = logo.outerHTML;
-      top.append(brand);
-    }
+  
+  if (brand) {
+    brand.className = 'headerv2__logo';
+    brand.setAttribute('aria-label', 'Go to University of Nottingham homepage');
+    brand.setAttribute('title', 'Go to University of Nottingham homepage');
+    brand.innerHTML = logo.outerHTML;
+    top.append(brand);
+  }
 
   const search = createSearch();
   const searchOpen = document.createElement('button');
